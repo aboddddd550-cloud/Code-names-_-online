@@ -3,69 +3,81 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Codenames — متعدد اللاعبين (احترافي)</title>
+  <title>Codenames — محلي (BroadcastChannel)</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <h1>كود نيمز — متعدد اللاعبين</h1>
+    <h1>كود نيمز — نسخة محلية (نوافذ/تبويبات)</h1>
+    <p class="muted">انضمّ إلى نفس الغرفة في تبويبات عدة بنفس المتصفح (ضع نفس رمز الغرفة)</p>
   </header>
 
-  <section class="topbar">
-    <input id="playerName" placeholder="اسمك (اختياري)" />
-    <input id="roomIdInput" placeholder="رمز الغرفة (اترك لإنشاء)" />
-    <button id="createRoomBtn">إنشاء غرفة</button>
-    <button id="joinRoomBtn">انضم</button>
+  <section class="panel top">
+    <label>اسمك: <input id="playerName" placeholder="اسم اللاعب" /></label>
+    <label>رمز الغرفة: <input id="roomIdInput" placeholder="مثال: room1" /></label>
+    <button id="joinBtn">انضم للغرفة</button>
+    <button id="createBtn">إنشاء غرفة جديدة</button>
     <span id="myId" class="muted"></span>
   </section>
 
-  <main>
+  <main class="main">
     <aside class="leftpanel">
-      <h3>الغرفة: <span id="roomLabel">—</span></h3>
+      <h3>معلومات الغرفة</h3>
+      <div>الغرفة: <strong id="roomLabel">—</strong></div>
+      <div>المضيف: <span id="hostLabel">—</span></div>
       <div id="playersList" class="players"></div>
 
-      <div class="controls">
-        <label>فريق:
-          <select id="teamSelect"><option value="red">أحمر</option><option value="blue">أزرق</option></select>
-        </label>
-        <label>دور:
-          <select id="roleSelect"><option value="guesser">Guesser</option><option value="spymaster">Spymaster</option></select>
-        </label>
-        <button id="setRoleBtn">تعيين</button>
+      <hr/>
+
+      <h4>دور وفريق</h4>
+      <label>الدور:
+        <select id="roleSelect">
+          <option value="guesser">Guesser</option>
+          <option value="spymaster">Spymaster</option>
+        </select>
+      </label>
+      <label>الفريق:
+        <select id="teamSelect">
+          <option value="red">أحمر</option>
+          <option value="blue">أزرق</option>
+        </select>
+      </label>
+      <button id="setRoleBtn">تعيين</button>
+
+      <hr/>
+
+      <h4>كلمات خاصة (اختياري)</h4>
+      <textarea id="customWords" placeholder="25 كلمة — كل كلمة في سطر"></textarea>
+      <label>من يبدأ:
+        <select id="startingTeam">
+          <option value="red">أحمر (9)</option>
+          <option value="blue">أزرق (9)</option>
+        </select>
+      </label>
+      <button id="startBtn">بدء اللعبة (المضيف فقط)</button>
+      <button id="regenBtn">إعادة توليد عشوائي (المضيف فقط)</button>
+
+      <hr/>
+
+      <h4>مؤقت الدور</h4>
+      <div id="timerDisplay">00:00</div>
+      <div class="timer-controls">
+        <input id="timerSeconds" type="number" min="5" value="60"> ث
+        <button id="startTimerBtn">ابدأ</button>
+        <button id="pauseTimerBtn">إيقاف</button>
+        <button id="resetTimerBtn">إعادة</button>
       </div>
 
-      <div class="customWords">
-        <h4>كلمات خاصة (25 كلمة — كل سطر كلمة)</h4>
-        <textarea id="customWords" placeholder="كل كلمة في سطر (اختياري)"></textarea>
-        <label>الفريق الذي يبدأ:
-          <select id="startingTeam"><option value="red">أحمر (9)</option><option value="blue">أزرق (9)</option></select>
-        </label>
-        <button id="startGameBtn" class="primary">بدء اللعبة (المضيف فقط)</button>
-        <button id="regenerateBtn">إعادة توليد (عشوائي)</button>
-      </div>
-
-      <div class="timerBox">
-        <h4>مؤقت الدور</h4>
-        <div id="timerDisplay">00:00</div>
-        <div class="time-controls">
-          <input id="timerSeconds" type="number" min="5" value="60" /> ث
-          <button id="startTimerBtn">ابدأ</button>
-          <button id="pauseTimerBtn">إيقاف</button>
-          <button id="resetTimerBtn">إعادة</button>
-        </div>
-      </div>
-
-      <div class="historyBox">
-        <h4>سجل الأحداث</h4>
-        <div id="history" class="history"></div>
-      </div>
+      <hr/>
+      <h4>سجل الأحداث</h4>
+      <div id="history" class="history"></div>
     </aside>
 
     <section class="boardwrap">
-      <div id="board" class="board" aria-label="لوحة اللعبة"></div>
+      <div id="board" class="board" aria-label="لوحة"></div>
 
-      <div id="cluePanel" class="cluePanel">
-        <div class="give-clue">
+      <div class="cluePanel">
+        <div class="clueInputs">
           <input id="clueWord" placeholder="كلمة التلميح" />
           <input id="clueNumber" type="number" min="0" placeholder="رقم" />
           <button id="giveClueBtn">أرسل تلميح</button>
@@ -74,18 +86,17 @@
       </div>
 
       <section id="spymasterPanel" class="spymasterPanel" hidden>
-        <h4>Keycard — فقط للـ Spymaster</h4>
+        <h4>Keycard (خاص بالـ Spymaster)</h4>
         <div id="keycardGrid" class="keycardGrid"></div>
-        <button id="toggleKeycardBtn">إخفاء/إظهار</button>
+        <button id="toggleKeycardBtn">إخفاء/إظهار Keycard</button>
       </section>
     </section>
   </main>
 
   <footer class="footer muted">
-    ملاحظة: استخدم قواعد أمان أو Cloud Functions للإنتاج. هذه النسخة جاهزة تجريبيًا.
+    ملاحظة: تعمل المزامنة محليًا عبر BroadcastChannel — ليست عبر الإنترنت بين أجهزة.
   </footer>
 
-  <!-- app.js كـ module -->
-  <script type="module" src="app.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
