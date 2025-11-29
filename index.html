@@ -1,30 +1,116 @@
-<!DOCTYPE html>
-<html lang="ar">
+<!doctype html>
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <title>Codenames Online</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Codenames — محلي (غرف)</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <header>
+    <h1>كود نيمز — نسخة محلية (نوافذ/تبويبات)</h1>
+    <p class="muted">انشر نفس الصفحة في تبويبات متعددة بنفس المتصفح وانضم لنفس الغرفة (نفس رمز الغرفة)</p>
+  </header>
 
-<div id="container">
+  <section class="setup">
+    <input id="playerName" placeholder="اسمك (اختياري)" />
+    <input id="roomIdInput" placeholder="رمز الغرفة (اكتب أو أنشئ)" />
+    <button id="createRoomBtn">إنشاء</button>
+    <button id="joinRoomBtn">انضم</button>
+    <span id="myId" class="muted"></span>
+  </section>
 
-    <h1>لعبة كود نيمز</h1>
+  <main class="main">
+    <aside class="leftpanel">
+      <h3>الغرفة: <span id="roomLabel">—</span></h3>
+      <div>المضيف: <span id="hostLabel">—</span></div>
 
-    <div id="roomBox">
-        <input type="text" id="roomInput" placeholder="اكتب اسم الغرفة أو أنشئ واحدة">
-        <button id="joinRoom">دخول / إنشاء روم</button>
-    </div>
+      <div class="playersBox">
+        <h4>اللاعبون</h4>
+        <div id="playersList" class="players"></div>
+      </div>
 
-    <div id="customWordsBox">
-        <textarea id="customWords" placeholder="اكتب هنا الكلمات الخاصة بك… كل كلمة في سطر مستقل"></textarea>
-        <button id="startGame">بدء اللعب</button>
-    </div>
+      <div class="controls">
+        <label>الدور:
+          <select id="roleSelect">
+            <option value="guesser">Guesser</option>
+            <option value="spymaster">Spymaster</option>
+          </select>
+        </label>
+        <label>الفريق:
+          <select id="teamSelect">
+            <option value="red">أحمر</option>
+            <option value="blue">أزرق</option>
+          </select>
+        </label>
+        <button id="setRoleBtn">تعيين</button>
+      </div>
 
-    <div id="gameBoard"></div>
+      <hr/>
 
-</div>
+      <h4>كلمات خاصة (25 كلمة — كل سطر كلمة)</h4>
+      <textarea id="customWords" placeholder="اكتب 25 كلمة — كل كلمة في سطر"></textarea>
+      <label>الفريق الذي يبدأ:
+        <select id="startingTeam"><option value="red">أحمر (9)</option><option value="blue">أزرق (9)</option></select>
+      </label>
+      <div class="hostBtns">
+        <button id="startGameBtn" class="primary">بدء اللعبة (المضيف)</button>
+        <button id="regenBtn">إعادة توليد</button>
+      </div>
 
-<script type="module" src="script.js"></script>
+      <hr/>
+      <h4>مؤقت الدور</h4>
+      <div id="timerDisplay">00:00</div>
+      <div class="timer-controls">
+        <input id="timerSeconds" type="number" min="5" value="60"> ث
+        <button id="startTimerBtn">ابدأ</button>
+        <button id="pauseTimerBtn">إيقاف</button>
+        <button id="resetTimerBtn">إعادة</button>
+      </div>
+    </aside>
+
+    <section class="boardwrap">
+      <div id="board" class="board" aria-label="لوحة اللعبة"></div>
+
+      <!-- Team panels under the board -->
+      <div class="teamsRow">
+        <div class="teamPanel redPanel">
+          <h4>الفريق الأحمر</h4>
+          <div>الكلمات المتبقية: <span id="redLeft">0</span></div>
+          <div id="redMembers" class="teamMembers"></div>
+        </div>
+
+        <div class="teamPanel bluePanel">
+          <h4>الفريق الأزرق</h4>
+          <div>الكلمات المتبقية: <span id="blueLeft">0</span></div>
+          <div id="blueMembers" class="teamMembers"></div>
+        </div>
+      </div>
+
+      <!-- Action log -->
+      <div class="actionLog">
+        <h4>سجل الأحداث</h4>
+        <div id="history" class="history"></div>
+      </div>
+
+      <!-- Spymaster area at bottom -->
+      <section id="spymasterPanel" class="spymasterPanel">
+        <h4>لوحة Spymaster / إرسال تلميح</h4>
+        <div class="spymasterRow">
+          <input id="clueWord" placeholder="كلمة التلميح" />
+          <input id="clueNumber" type="number" min="0" placeholder="رقم" />
+          <button id="giveClueBtn">أرسل تلميح</button>
+          <button id="showKeyBtn">إظهار Keycard</button>
+          <button id="hideKeyBtn">إخفاء Keycard</button>
+        </div>
+        <div id="currentClue" class="muted">لا توجد تلميحات</div>
+        <div id="keycardGrid" class="keycardGrid" hidden></div>
+      </section>
+    </section>
+  </main>
+
+  <footer class="footer muted">ملاحظة: التزامن محلي (نوافذ/تبويبات نفس المتصفح). لامتداد عبر الأجهزة نحتاج خدمة (Firebase/WebSocket).</footer>
+
+<script src="script.js"></script>
 </body>
 </html>
