@@ -3,19 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Codenames Online - متعدد اللاعبين</title>
+  <title>Codenames - متعدد اللاعبين (احترافي)</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <h1>كود نيمز — متعدد اللاعبين</h1>
+    <h1>كود نيمز — متعدد اللاعبين (احترافي)</h1>
   </header>
 
   <section class="topbar">
     <input id="playerName" placeholder="اسمك (اختياري)" />
-    <input id="roomIdInput" placeholder="رمز الغرفة (أو اتركها لإنشاء)" />
-    <button id="createRoomBtn">إنشاء غرفة جديدة</button>
-    <button id="joinRoomBtn">انضم إلى الغرفة</button>
+    <input id="roomIdInput" placeholder="رمز الغرفة (اترك لإنشاء)" />
+    <button id="createRoomBtn">إنشاء غرفة</button>
+    <button id="joinRoomBtn">انضم</button>
     <span id="myId" class="muted"></span>
   </section>
 
@@ -26,27 +26,20 @@
 
       <div class="controls">
         <label>فريق:
-          <select id="teamSelect">
-            <option value="red">أحمر</option>
-            <option value="blue">أزرق</option>
-          </select>
+          <select id="teamSelect"><option value="red">أحمر</option><option value="blue">أزرق</option></select>
         </label>
         <label>دور:
-          <select id="roleSelect">
-            <option value="guesser">Guesser</option>
-            <option value="spymaster">Spymaster</option>
-          </select>
+          <select id="roleSelect"><option value="guesser">Guesser</option><option value="spymaster">Spymaster</option></select>
         </label>
-        <button id="setRoleBtn">تعيين الدور</button>
+        <button id="setRoleBtn">تعيين</button>
       </div>
 
       <div class="customWords">
         <h4>كلمات خاصة (25 كلمة — كل سطر كلمة)</h4>
-        <textarea id="customWords" placeholder="كلمة1&#10;كلمة2&#10;..."></textarea>
-        <label>فريق يبدأ:
+        <textarea id="customWords" placeholder="إن أردت كلمات مخصصة اكتب 25 كلمة هنا"></textarea>
+        <label>الفريق الذي يبدأ:
           <select id="startingTeam">
-            <option value="red">أحمر (9 كلمات)</option>
-            <option value="blue">أزرق (9 كلمات)</option>
+            <option value="red">أحمر (9)</option><option value="blue">أزرق (9)</option>
           </select>
         </label>
         <button id="startGameBtn" class="primary">بدء اللعبة (المضيف فقط)</button>
@@ -55,10 +48,17 @@
       <div class="timerBox">
         <h4>مؤقت الدور</h4>
         <div id="timerDisplay">00:00</div>
-        <button id="startTimerBtn">ابدأ</button>
-        <button id="pauseTimerBtn">إيقاف</button>
-        <button id="resetTimerBtn">إعادة</button>
-        <input id="timerSeconds" type="number" min="10" value="60" /> ثواني
+        <div class="time-controls">
+          <input id="timerSeconds" type="number" min="10" value="60" /> ث
+          <button id="startTimerBtn">ابدأ</button>
+          <button id="pauseTimerBtn">إيقاف</button>
+          <button id="resetTimerBtn">إعادة</button>
+        </div>
+      </div>
+
+      <div class="historyBox">
+        <h4>سجل الأحداث</h4>
+        <div id="history" class="history"></div>
       </div>
     </aside>
 
@@ -66,16 +66,16 @@
       <div id="board" class="board" aria-label="لوحة اللعبة"></div>
 
       <div id="cluePanel" class="cluePanel">
-        <div>
+        <div class="give-clue">
           <input id="clueWord" placeholder="كلمة التلميح" />
           <input id="clueNumber" type="number" min="0" placeholder="رقم" />
           <button id="giveClueBtn">أرسل تلميح</button>
         </div>
-        <div id="currentClue" class="muted">لا توجد تلميحات بعد</div>
+        <div id="currentClue" class="muted">لا توجد تلميحات</div>
       </div>
 
       <section id="spymasterPanel" class="spymasterPanel" hidden>
-        <h4>Keycard (خاص بالـ Spymaster)</h4>
+        <h4>Keycard — فقط للـ Spymaster</h4>
         <div id="keycardGrid" class="keycardGrid"></div>
         <button id="toggleKeycardBtn">إخفاء/إظهار</button>
       </section>
@@ -83,7 +83,7 @@
   </main>
 
   <footer class="footer muted">
-    ملاحظة: هذا النظام يعتمد على Firebase Realtime DB. للحصول على أمان حقيقي يجب إضافة فحوصات في Cloud Functions / قواعد الأمان.
+    الرجاء استخدام هذا المشروع مع قواعد أمان / Cloud Functions للتحقق من صلاحيات المضيف والـ spymaster.
   </footer>
 
   <script type="module" src="app.js"></script>
