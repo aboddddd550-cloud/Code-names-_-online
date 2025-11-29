@@ -1,58 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Codenames - لعبة كلمات (Firebase)</title>
-  <link rel="stylesheet" href="/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codenames</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>كود نيمز — اللعب الجماعي</h1>
-    <div id="controls">
-      <input id="roomIdInput" placeholder="أدخل رمز الغرفة أو اتركها" />
-      <button id="createRoomBtn">إنشاء غرفة جديدة</button>
-      <button id="joinRoomBtn">انضم إلى الغرفة</button>
-      <span id="myId"></span>
-    </div>
-  </header>
 
-  <main>
-    <aside id="sidebar">
-      <div id="roomInfo"></div>
-      <div id="playersList"></div>
+    <h1 class="title">لعبة كود نيمز</h1>
 
-      <div id="roleControls">
-        <button id="beSpymaster">كن Spymaster</button>
-        <button id="beGuesser">كن Guesser</button>
-      </div>
+    <div id="board" class="board"></div>
 
-      <div id="clueBox">
-        <input id="clueWord" placeholder="كلمة التلميح" />
-        <input id="clueNumber" type="number" min="0" placeholder="رقم" />
-        <button id="giveClue">أعطِ تلميحاً</button>
-      </div>
-
-      <div id="log"></div>
-    </aside>
-
-    <section id="board" aria-label="لوحة اللعبة">
-      <!-- سيُملأ ديناميكياً 25 بطاقة -->
-    </section>
-
-    <aside id="spymasterPanel" hidden>
-      <h3>Keycard (خاصة بالـ Spymaster)</h3>
-      <div id="keycardGrid"></div>
-      <button id="toggleKeycard">إخفاء/إظهار Keycard</button>
-    </aside>
-  </main>
-
-  <template id="cardTemplate">
-    <button class="card" data-index="-1">
-      <span class="word"></span>
-    </button>
-  </template>
-
-  <script type="module" src="/app.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
