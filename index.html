@@ -1,33 +1,16 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Codenames Online</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لعبة كود نيمز الجماعية</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <h1>لعبة كود نيمز الجماعية</h1>
+  <div id="board"></div>
 
-<header>
-  <h1>لعبة Codenames - Online</h1>
-</header>
-
-<main>
-  <section id="info">
-    <p>الدور الحالي: <span id="current-team">أزرق</span></p>
-    <p>دورك: <span id="role">Guessers</span></p>
-    <p>بطاقات الفريق الأحمر المتبقية: <span id="red-left">9</span></p>
-    <p>بطاقات الفريق الأزرق المتبقية: <span id="blue-left">8</span></p>
-    <button id="newGameBtn">لعبة جديدة</button>
-  </section>
-
-  <section id="board"></section>
-</main>
-
-<footer>
-  <p>&copy; 2025 لعبتك الخاصة بكود نيمز</p>
-</footer>
-
-<script src="script.js"></script>
+  <!-- ربط Firebase و script.js -->
+  <script type="module" src="script.js"></script>
 </body>
 </html>
