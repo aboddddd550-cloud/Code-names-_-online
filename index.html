@@ -1,60 +1,31 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Codenames Online</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Codenames Online</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>لعبة كود نيمز - Online</h1>
-  </header>
+<header>
+  <h1>لعبة كود نيمز - Online</h1>
+</header>
 
-  <main>
-    <section id="board">
-      <!-- سيتم إنشاء 25 بطاقة هنا -->
-      <div class="card" id="card0">?</div>
-      <div class="card" id="card1">?</div>
-      <div class="card" id="card2">?</div>
-      <div class="card" id="card3">?</div>
-      <div class="card" id="card4">?</div>
+<main>
+  <section id="board"></section>
 
-      <div class="card" id="card5">?</div>
-      <div class="card" id="card6">?</div>
-      <div class="card" id="card7">?</div>
-      <div class="card" id="card8">?</div>
-      <div class="card" id="card9">?</div>
+  <section id="info">
+    <p>الدور: <span id="role">Guessers</span></p>
+    <p>الفريق الحالي: <span id="current-team">أزرق</span></p>
+  </section>
 
-      <div class="card" id="card10">?</div>
-      <div class="card" id="card11">?</div>
-      <div class="card" id="card12">?</div>
-      <div class="card" id="card13">?</div>
-      <div class="card" id="card14">?</div>
+  <button id="newGameBtn">لعبة جديدة</button>
+</main>
 
-      <div class="card" id="card15">?</div>
-      <div class="card" id="card16">?</div>
-      <div class="card" id="card17">?</div>
-      <div class="card" id="card18">?</div>
-      <div class="card" id="card19">?</div>
+<footer>
+  <p>&copy; 2025 لعبتك الخاصة بكود نيمز</p>
+</footer>
 
-      <div class="card" id="card20">?</div>
-      <div class="card" id="card21">?</div>
-      <div class="card" id="card22">?</div>
-      <div class="card" id="card23">?</div>
-      <div class="card" id="card24">?</div>
-    </section>
-
-    <section id="info">
-      <p>اختيار الدور: <span id="role">Spymaster / Guesser</span></p>
-      <p>الفريق الحالي: <span id="current-team">أزرق / أحمر</span></p>
-    </section>
-  </main>
-
-  <footer>
-    <p>&copy; 2025 لعبتك الخاصة بكود نيمز</p>
-  </footer>
-
-  <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
