@@ -32,23 +32,22 @@ body {
     transform: scale(1.05);
 }
 
-/* ألوان الفرق */
 .red {
-    background: #d9534f;
+    background: #d9534f !important;
     color: white;
 }
 
 .blue {
-    background: #0275d8;
+    background: #0275d8 !important;
     color: white;
 }
 
 .neutral {
-    background: #cfcfcf;
+    background: #cfcfcf !important;
     color: black;
 }
 
 .assassin {
-    background: #000;
+    background: black !important;
     color: white;
 }
