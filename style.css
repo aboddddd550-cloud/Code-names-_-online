@@ -1,60 +1,65 @@
-:root{
-  --bg:#f4f7fb; --panel:#fff; --accent:#0b7bff;
-  --red:#e74c3c; --blue:#2471ff; --neutral:#cfcfcf; --assassin:#111;
-  --text:#122;
-}
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;font-family:Tahoma,Arial;background:var(--bg);color:var(--text);direction:rtl}
-header{padding:18px;text-align:center}
-.muted{opacity:0.75;font-size:13px}
+/*! Base game styling */
+#game{width:700px;margin:0 auto;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}
+#board{position:relative;font-family: Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif, Verdana,Geneva,Tahoma,sans-serif;}
+#game .red:not(.hidden){color:#d13030;}
+#game .blue:not(.hidden){color:#4183cc;}
+#expansions{margin:0 5px 2em;font-family:'Courier New',Courier,monospace;text-align:center;font-size:22px;}
+#expansions #instruction{margin:0 auto 15px;font-weight:600;}
+#expansions #words-changed{margin:15px auto 0;font-weight:600;}
+#expansions #words-changed.hidden{display: none;}
+#expansions .expansion{width:calc(30% - 6px);width:-moz-calc(30% - 6px);width:-webkit-calc(30% - 6px);margin:0;border:3px solid #fff;border-radius:10px;}
+#expansions .expansion:first-child{margin-right:5%;}
+#expansions .expansion:last-child{margin-left:5%;}
+#expansions .expansion.selected{outline:3px solid #000;}
+#game.player #board .hidden{cursor:pointer;}
+#game #board .neutral.revealed{background:#ede2cc;}
+#game #board .card{vertical-align:middle;background:#DDD;border-radius:10px;width:120px;height:80px;line-height:75px;margin:5px;padding:5px;display:inline-block;text-align:center;font-weight:600;}
+#game #board .card .word{vertical-align:middle;display:inline-block;}
+#game.spymaster #board .card.red.hidden{color:#d13030;}
+#game.spymaster #board .card.blue.hidden{color:#4183cc;}
+#game.spymaster:not(.hard-mode) #board .card.black.hidden{background:#BBB;width:116px;height:76px;line-height:72px;outline:2px solid #000;border:2px solid #fff;}
+#game.spymaster #board .card{font-weight:600;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}
+#game #board .card.red.revealed{background:#d13030;color:#fff;}
+#game #board .card.blue.revealed{background:#4183cc;color:#fff;}
+#game #board .card.black.revealed{background:#000;color:#fff;}
+/*! End base styling */
 
-.setup{display:flex;gap:8px;justify-content:center;padding:8px}
-.setup input{padding:8px;border-radius:6px;border:1px solid #dfefff}
-.setup button{padding:8px 12px;border-radius:6px;border:none;background:var(--accent);color:#fff;cursor:pointer}
+/*! Colourblind scheme */
+#game:not(.duet).colourblind #board .card:not(.neutral):not(.black){width:130px;height:90px;box-sizing:border-box;line-height: 70px;}
+#game:not(.duet).colourblind:not(.spymaster) #board .card.hidden:not(.neutral):not(.black){line-height:75px;}
+#game:not(.duet).colourblind #board .card.revealed{text-decoration:underline;}
+#game:not(.duet).colourblind #board .card.red.revealed,#game:not(.duet).colourblind.spymaster #board .card.red.hidden{outline:3px dashed #d13030;border:3px solid #fff;}
+#game:not(.duet).colourblind #board .card.blue.revealed, #game:not(.duet).colourblind.spymaster #board .card.blue.hidden{outline:3px solid #4183cc;border:3px solid #fff;}
+/*! End colourblind */
 
-.main{display:flex;gap:14px;padding:16px;align-items:flex-start}
-.leftpanel{width:340px;background:var(--panel);padding:12px;border-radius:10px;box-shadow:0 6px 18px rgba(16,24,40,0.06)}
-.boardwrap{flex:1;display:flex;flex-direction:column;gap:12px}
+/*! Duet game styling */
+#game .green{color:#0e9c2d;}
 
-.players{max-height:200px;overflow:auto;padding:6px;border-radius:6px;background:linear-gradient(180deg,#fff,#fbfdff)}
-.players .pitem{padding:6px;border-bottom:1px dashed rgba(0,0,0,0.04)}
+#game.duet.team-one #board .card.team-one-assassin,#game.duet.team-two #board .card.team-two-assassin{background:#BBB;width:116px;height:76px;line-height:72px;outline:2px solid #000;border:2px solid #fff;color:#000;}
+#game.duet.team-one #board .card.team-one-neutral,#game.duet.team-two #board .card.team-two-neutral{background:#DDD;color:#000;}
+#game.duet.team-one #board .card.team-one-agent,#game.duet.team-two #board .card.team-two-agent{color:#0e9c2d;background:#DDD;}
 
-.controls{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.customWords textarea{width:100%;height:110px;padding:8px;border-radius:6px;border:1px solid #e6eef8;background:white}
-.primary{background:var(--red);color:white;padding:8px;border-radius:6px;border:none;margin-top:8px;cursor:pointer}
 
-.board{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:12px;border-radius:10px}
-.card{background:var(--panel);padding:18px;border-radius:10px;min-height:92px;display:flex;align-items:center;justify-content:center;font-weight:800;cursor:pointer;border:2px solid rgba(0,0,0,0.04);transition:transform .14s,box-shadow .14s}
-.card:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(16,24,40,0.06)}
-.card.revealed{opacity:0.98;color:#fff}
-.card.red{background:linear-gradient(180deg,#ffb6b0,var(--red));}
-.card.blue{background:linear-gradient(180deg,#b6d0ff,var(--blue));}
-.card.neutral{background:linear-gradient(180deg,#f3f3f3,var(--neutral));color:#333}
-.card.assassin{background:linear-gradient(180deg,#000,#222);}
+#game.duet.team-one #board .card.team-one-agent.duet-reveal.duet-neutral,#game.duet.team-two #board .card.team-two-agent.duet-reveal.duet-neutral{background:#ede2cc ;color:#0e9c2d}
 
-.teamsRow{display:flex;gap:12px;justify-content:center;margin-top:6px}
-.teamPanel{width:48%;background:var(--panel);padding:10px;border-radius:8px;box-shadow:0 6px 18px rgba(16,24,40,0.04)}
-.teamPanel h4{margin:4px 0}
-.teamMembers{margin-top:8px;font-size:14px;color:#333}
-.redPanel{border-top:4px solid var(--red)}
-.bluePanel{border-top:4px solid var(--blue)}
+#game.duet #board .card.duet-reveal.duet-neutral{background:#ede2cc !important;color:#000}
+#game.duet #board .card.duet-reveal.duet-assassin{background:#000 !important;color:#fff !important;}
+#game.duet #board .card.duet-reveal.duet-agent{background:#0e9c2d !important;color:#fff !important;}
 
-.actionLog{background:var(--panel);padding:10px;border-radius:8px;min-height:120px;max-height:200px;overflow:auto}
-.history div{padding:6px;border-bottom:1px dashed #eee;font-size:13px}
 
-.spymasterPanel{background:var(--panel);padding:12px;border-radius:8px}
-.spymasterRow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.spymasterRow input{padding:8px;border-radius:6px;border:1px solid #e6eef8}
-.spymasterRow button{padding:8px 10px;border-radius:6px;border:none;background:var(--accent);color:#fff;cursor:pointer}
+/*! Duet colourblind mode */
+#game.duet.colourblind.team-one #board .card.team-one-agent,#game.duet.colourblind.team-two #board .card.team-two-agent{outline:3px dashed #0e9c2d;border:3px solid #fff;width:130px;height:90px;box-sizing:border-box;line-height: 70px;}
 
-.keycardGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px}
-.spy-card{padding:8px;border-radius:6px;text-align:center;font-weight:700;color:#fff}
-.spy-card.red{background:var(--red)}
-.spy-card.blue{background:var(--blue)}
-.spy-card.neutral{background:var(--neutral);color:#222}
-.spy-card.assassin{background:var(--assassin)}
+#game.colourblind.duet #board .card.duet-reveal.duet-neutral{text-decoration:underline;}
+#game.colourblind.duet #board .card.duet-reveal.duet-assassin{text-decoration:underline;border:3px solid #fff;width:130px;height:90px;box-sizing:border-box;outline:2px solid #000;border:3px solid #fff;line-height: 70px;}
+#game.colourblind.duet #board .card.duet-reveal.duet-agent{text-decoration:underline;border:3px solid #fff;width:130px;height:90px;box-sizing:border-box;line-height: 70px;}
 
-.timer-controls{display:flex;gap:8px;align-items:center}
-#timerDisplay{font-weight:800;font-size:18px;margin-top:6px}
-.footer{padding:10px;text-align:center;margin-top:14px;color:#445}
-@media(max-width:980px){.main{flex-direction:column}.leftpanel{width:100%}}
+/*! End duet styling */
+
+
+/*! Night mode */
+/*! NOTE(Meyer): Needs serious work */
+#game.night-mode{background:#111;color:white;}
+#game.night-mode #board .card{background:#525252;}
+#game.night-mode #board .neutral.revealed{background:#757575;}
+/*! End night mode */
