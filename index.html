@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Codenames - متعدد اللاعبين (احترافي)</title>
+  <title>Codenames — متعدد اللاعبين (احترافي)</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <h1>كود نيمز — متعدد اللاعبين (احترافي)</h1>
+    <h1>كود نيمز — متعدد اللاعبين</h1>
   </header>
 
   <section class="topbar">
@@ -36,20 +36,19 @@
 
       <div class="customWords">
         <h4>كلمات خاصة (25 كلمة — كل سطر كلمة)</h4>
-        <textarea id="customWords" placeholder="إن أردت كلمات مخصصة اكتب 25 كلمة هنا"></textarea>
+        <textarea id="customWords" placeholder="كل كلمة في سطر (اختياري)"></textarea>
         <label>الفريق الذي يبدأ:
-          <select id="startingTeam">
-            <option value="red">أحمر (9)</option><option value="blue">أزرق (9)</option>
-          </select>
+          <select id="startingTeam"><option value="red">أحمر (9)</option><option value="blue">أزرق (9)</option></select>
         </label>
         <button id="startGameBtn" class="primary">بدء اللعبة (المضيف فقط)</button>
+        <button id="regenerateBtn">إعادة توليد (عشوائي)</button>
       </div>
 
       <div class="timerBox">
         <h4>مؤقت الدور</h4>
         <div id="timerDisplay">00:00</div>
         <div class="time-controls">
-          <input id="timerSeconds" type="number" min="10" value="60" /> ث
+          <input id="timerSeconds" type="number" min="5" value="60" /> ث
           <button id="startTimerBtn">ابدأ</button>
           <button id="pauseTimerBtn">إيقاف</button>
           <button id="resetTimerBtn">إعادة</button>
@@ -83,9 +82,10 @@
   </main>
 
   <footer class="footer muted">
-    الرجاء استخدام هذا المشروع مع قواعد أمان / Cloud Functions للتحقق من صلاحيات المضيف والـ spymaster.
+    ملاحظة: استخدم قواعد أمان أو Cloud Functions للإنتاج. هذه النسخة جاهزة تجريبيًا.
   </footer>
 
+  <!-- app.js كـ module -->
   <script type="module" src="app.js"></script>
 </body>
 </html>
