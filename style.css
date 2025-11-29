@@ -21,7 +21,7 @@ header {
 }
 
 .card {
-  background-color: #ffd966;
+  background-color: #ffd966; /* خلفية مبدئية */
   border: 2px solid #333;
   border-radius: 10px;
   width: 120px;
