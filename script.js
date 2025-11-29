@@ -1,9 +1,9 @@
-// app.js — كامل ومرتب
+// app.js (module)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 import { getDatabase, ref, set, update, push, onValue, get } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
-/* ========== إعداد Firebase — استخدمت نفس البيانات التي أرسلتها ========== */
+/* ========== Firebase config (استخدم ما أرسلتَه) ========== */
 const firebaseConfig = {
   apiKey: "AIzaSyDQ9PFMO7k_eY78Fl6vxe18g_VbCMXTe3E",
   authDomain: "code-online-e0a52.firebaseapp.com",
@@ -19,7 +19,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-/* ========== مراجع DOM ========== */
+/* ========== DOM refs ========== */
 const playerNameInput = document.getElementById('playerName');
 const roomIdInput = document.getElementById('roomIdInput');
 const createRoomBtn = document.getElementById('createRoomBtn');
@@ -45,183 +45,191 @@ const startTimerBtn = document.getElementById('startTimerBtn');
 const pauseTimerBtn = document.getElementById('pauseTimerBtn');
 const resetTimerBtn = document.getElementById('resetTimerBtn');
 const timerSecondsInput = document.getElementById('timerSeconds');
+const historyEl = document.getElementById('history');
 
+/* ========== Local state ========== */
 let me = { uid: null, name: null };
 let currentRoomId = null;
 let localRole = 'guesser';
 let localTeam = 'red';
-let roomDataCache = null;
+let roomCache = null;
 let timerInterval = null;
 
-/* ========== مصادقة مجهولة ========= */
+/* ========== Auth (anonymous) ========== */
 signInAnonymously(auth).then((cred) => {
   me.uid = cred.user.uid;
   myIdSpan.textContent = `id: ${me.uid.slice(0,8)}`;
 }).catch(console.error);
 
-/* ========== أدوات مساعدة ========== */
-function uidRand(len = 6) { return Math.random().toString(36).slice(2, 2 + len); }
-function shuffle(a) { return a.sort(() => Math.random() - 0.5); }
-function formatTime(sec) {
-  sec = Math.max(0, Math.floor(sec));
-  const m = String(Math.floor(sec / 60)).padStart(2, '0');
-  const s = String(sec % 60).padStart(2, '0');
-  return `${m}:${s}`;
-}
+/* ========== Helpers ========== */
+function uidRand(len = 6){ return Math.random().toString(36).slice(2,2+len); }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+function formatTime(sec){ sec = Math.max(0, Math.floor(sec)); const m = String(Math.floor(sec/60)).padStart(2,'0'); const s = String(sec%60).padStart(2,'0'); return `${m}:${s}`; }
+function pushHistory(msg){ const h = historyEl; const d = document.createElement('div'); d.textContent = `${new Date().toLocaleTimeString()} — ${msg}`; h.prepend(d); }
 
-/* ========== إنشاء/انضمام غرفة ========== */
+/* ========== Create / Join room ========== */
 createRoomBtn.onclick = async () => {
   const rid = 'r' + uidRand(8);
-  await ensureJoinRoom(rid);
+  await joinRoom(rid);
 };
 
 joinRoomBtn.onclick = async () => {
   const rid = roomIdInput.value.trim();
-  if (!rid) return alert('أدخل رمز الغرفة أو أنشئ واحدة');
-  await ensureJoinRoom(rid);
+  if(!rid) return alert('أدخل رمز الغرفة أو أنشئ واحدة');
+  await joinRoom(rid);
 };
 
-async function ensureJoinRoom(roomId) {
+async function joinRoom(roomId){
   currentRoomId = roomId;
   roomLabel.textContent = roomId;
-  // سجل اللاعب
   me.name = playerNameInput.value.trim() || `لاعب-${me.uid.slice(-4)}`;
-  const playerRef = ref(db, `rooms/${roomId}/players/${me.uid}`);
-  await set(playerRef, { uid: me.uid, name: me.name, role: localRole, team: localTeam, joinedAt: Date.now() });
 
-  // إذا لم توجد الغرفة أنشئ الهيكل المبدئي (host = أول لاعب ينشئ)
+  // write player entry
+  await set(ref(db, `rooms/${roomId}/players/${me.uid}`), { uid: me.uid, name: me.name, role: localRole, team: localTeam, joinedAt: Date.now() });
+
+  // if room not exist create initial skeleton (host = first joiner)
   const roomRef = ref(db, `rooms/${roomId}`);
   const snap = await get(roomRef);
-  if (!snap.exists()) {
-    await set(roomRef, {
-      host: me.uid,
-      state: { phase: 'lobby', turn: null, clue: null, guessesLeft: 0, timer: { running: false, secondsLeft: 60 } }
-    });
+  if(!snap.exists()){
+    await set(roomRef, { host: me.uid, state: { phase: 'lobby', turn: null, clue: null, guessesLeft: 0, timer: { running:false, secondsLeft:60 } } });
   }
 
-  // استمع لتحديثات الغرفة
+  // listen for room updates
   onValue(roomRef, (s) => {
-    roomDataCache = s.val();
-    renderRoom(roomDataCache);
+    const data = s.val();
+    roomCache = data;
+    renderRoom(data);
   });
+
+  pushHistory(`${me.name} انضم إلى الغرفة`);
 }
 
-/* ========== تعيين الدور والفريق ========== */
+/* ========== Set role/team ========== */
 setRoleBtn.onclick = async () => {
   localRole = roleSelect.value;
   localTeam = teamSelect.value;
-  if (!currentRoomId) return alert('انضم إلى غرفة أولاً');
+  if(!currentRoomId) return alert('انضم لغرفة أولاً');
   await set(ref(db, `rooms/${currentRoomId}/players/${me.uid}/role`), localRole);
   await set(ref(db, `rooms/${currentRoomId}/players/${me.uid}/team`), localTeam);
 };
 
-/* ========== بدء اللعبة (المضيف فقط) ========== */
+/* ========== Start game (host only) ========== */
 startGameBtn.onclick = async () => {
-  if (!currentRoomId) return alert('انضم إلى غرفة أولاً');
-  if (roomDataCache?.host !== me.uid) return alert('فقط المضيف يمكنه بدء اللعبة');
+  if(!currentRoomId) return alert('انضم لغرفة أولاً');
+  const room = roomCache;
+  if(!room || room.host !== me.uid) return alert('فقط المضيف يمكنه بدء اللعبة');
 
-  // اجلب الكلمات من textarea — يجب أن تكون 25 كلمة
-  const raw = customWordsTA.value.trim();
-  const words = raw.split(/\r?\n/).map(w => w.trim()).filter(w => w.length > 0);
-  if (words.length !== 25) return alert('أدخل 25 كلمة بالضبط (كل كلمة في سطر)');
+  // words: from textarea or fallback to built-in random set
+  const text = customWordsTA.value.trim();
+  let words = [];
+  if(text.length){
+    words = text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+    if(words.length !== 25) return alert('أدخل 25 كلمة بالضبط في الكلمات الخاصة');
+  } else {
+    // fallback: built-in list (minimal, لكن تقدر توسيع)
+    const builtin = ["قلم","كتاب","شمس","قمر","ماء","نهر","جبل","مدينة","طائرة","سفينة","كرسي","نافذة","باب","كمبيوتر","هاتف","مفتاح","حديقة","زهرة","قطة","كلب","سماء","نار","ثلج","قهوة","موسيقى","علم","فيلم","حدود","قصر","جسر","مطر","رعد","برق","صورة","قائد","مهندس","طبيب","مزارع","خبر","قصة","رواية","لعبة","سباق"];
+    // pick 25 random
+    words = shuffle(builtin).slice(0,25);
+  }
 
-  // افتَرِض الفريق الذي يبدأ
-  const starting = startingTeamSelect.value; // 'red' أو 'blue'
-  // توزيع الأدوار: الفريق الذي يبدأ يحصل على 9 كلمات
-  const roles = [];
-  if (starting === 'red') {
+  // build keycard according to starting team
+  const starting = startingTeamSelect.value; // 'red' or 'blue'
+  let roles = [];
+  if(starting === 'red'){
     roles.push(...Array(9).fill('red'), ...Array(8).fill('blue'));
   } else {
     roles.push(...Array(9).fill('blue'), ...Array(8).fill('red'));
   }
   roles.push('assassin');
-  // باقي محايد (نكمل حتى 25)
-  while (roles.length < 25) roles.push('neutral');
+  while(roles.length < 25) roles.push('neutral');
   shuffle(roles);
-
-  // خلط الكلمات
   shuffle(words);
 
-  // ادخال البيانات في الغرفة
-  const updates = {};
-  updates[`rooms/${currentRoomId}/board`] = words;
-  updates[`rooms/${currentRoomId}/keycard`] = roles;
-  updates[`rooms/${currentRoomId}/revealed`] = Array(25).fill(false);
-  updates[`rooms/${currentRoomId}/state/phase`] = 'playing';
-  updates[`rooms/${currentRoomId}/state/turn`] = starting;
-  updates[`rooms/${currentRoomId}/state/clue`] = null;
-  updates[`rooms/${currentRoomId}/state/guessesLeft`] = 0;
-  await update(ref(db), updates);
+  // revealed map as object
+  const revealedObj = {};
+  for(let i=0;i<25;i++) revealedObj[i]=false;
+
+  // write to DB (server-authoritative would be better via Cloud Function)
+  await update(ref(db, `rooms/${currentRoomId}`), {
+    board: words,
+    keycard: roles,
+    revealed: revealedObj,
+    'state/phase': 'playing',
+    'state/turn': starting,
+    'state/clue': null,
+    'state/guessesLeft': 0
+  });
+
+  pushHistory(`المضيف بدأ اللعبة — الفريق الذي يبدأ: ${starting}`);
 };
 
-/* ========== عرض الغرفة واللاعبين واللوحة ========== */
-function renderRoom(room) {
-  if (!room) return;
+/* ========== Render room UI ========== */
+function renderRoom(room){
+  if(!room) return;
   // players
   playersListEl.innerHTML = '';
   const players = room.players || {};
-  Object.values(players).forEach(p => {
+  Object.values(players).forEach(p=>{
     const d = document.createElement('div');
     d.className = 'pitem';
     d.textContent = `${p.name} — ${p.team || '-'} — ${p.role || '-'}`;
-    if (p.uid === room.host) d.textContent += ' (المضيف)';
+    if(p.uid === room.host) d.textContent += ' (المضيف)';
     playersListEl.appendChild(d);
   });
 
-  // التحكمات: إظهار زر البدء فقط للمضيف
-  if (room.host === me.uid && room.state?.phase === 'lobby') {
-    startGameBtn.style.display = 'block';
-  } else {
-    startGameBtn.style.display = 'none';
-  }
+  // show/hide start button
+  startGameBtn.style.display = (room.host === me.uid && room.state?.phase === 'lobby') ? 'block' : 'none';
 
-  // عرض المؤقت
-  const timer = room.state?.timer || { running: false, secondsLeft: 60 };
+  // timer display
+  const timer = room.state?.timer || { running:false, secondsLeft:60 };
   timerDisplay.textContent = formatTime(timer.secondsLeft);
-  // build board if موجود
-  if (room.board && room.keycard && room.revealed) {
+
+  // board & keycard
+  if(room.board && room.keycard && room.revealed){
     buildBoard(room.board, room.keycard, room.revealed);
-    // spymaster panel visibility: if my role is spymaster show
     const myPlayer = room.players?.[me.uid];
-    if (myPlayer?.role === 'spymaster') {
+    if(myPlayer?.role === 'spymaster'){
       spymasterPanel.hidden = false;
       buildKeycard(room.keycard, room.board);
     } else {
       spymasterPanel.hidden = true;
     }
-    // clue
-    if (room.state?.clue) {
+    // current clue
+    if(room.state?.clue){
       currentClue.textContent = `تلميح: ${room.state.clue.word} (${room.state.clue.number}) — تخمينات متبقية: ${room.state.guessesLeft}`;
     } else {
-      currentClue.textContent = 'لا توجد تلميحات بعد';
+      currentClue.textContent = 'لا توجد تلميحات';
+    }
+    // history
+    if(room.history){
+      historyEl.innerHTML = '';
+      const arr = Object.values(room.history).slice(-80).reverse();
+      arr.forEach(h=> pushHistory(h));
     }
   }
+  roomCache = room;
 }
 
-/* ========== بناء اللوحة (اللاعبون) ========== */
-function buildBoard(board, keycard, revealed) {
+/* ========== Build board (players view) ========== */
+function buildBoard(board, keycard, revealed){
   boardEl.innerHTML = '';
-  for (let i = 0; i < 25; i++) {
+  for(let i=0;i<25;i++){
     const card = document.createElement('div');
     card.className = 'card';
     card.textContent = board[i];
-    // إذا مكشوف
-    if (revealed[i]) {
+
+    if(revealed[i]){
       card.classList.add('revealed', keycard[i]);
-      card.classList.add(keycard[i]); // class مثل 'red' أو 'blue' أو 'neutral' أو 'assassin'
-      card.classList.add('revealed'); // نمط عام
     }
-    card.onclick = () => {
-      attemptGuess(i);
-    };
+    card.onclick = () => onCardClick(i);
     boardEl.appendChild(card);
   }
 }
 
-/* ========== لوحة Spymaster (تُعرض فقط للـ spymaster) ========== */
-function buildKeycard(keycard, board) {
+/* ========== Build keycard (spymaster) ========== */
+function buildKeycard(keycard, board){
   keycardGrid.innerHTML = '';
-  for (let i = 0; i < keycard.length; i++) {
+  for(let i=0;i<25;i++){
     const el = document.createElement('div');
     el.className = 'spy-card';
     el.textContent = board[i];
@@ -229,111 +237,164 @@ function buildKeycard(keycard, board) {
     keycardGrid.appendChild(el);
   }
 }
-function getColor(type) {
-  return type === 'red' ? '#d9534f' : type === 'blue' ? '#0275d8' : type === 'assassin' ? '#000' : '#9ca3af';
-}
+function getColor(type){ return type==='red' ? '#e53935' : type==='blue' ? '#1e88e5' : type==='assassin' ? '#111' : '#9ca3af'; }
 
-/* ========== إرسال تلميح (فقط spymaster) ========== */
+/* ========== Give clue (spymaster only) ========== */
 giveClueBtn.onclick = async () => {
-  if (!currentRoomId) return alert('انضم إلى غرفة أولاً');
-  const room = roomDataCache;
-  const myPlayer = room.players?.[me.uid];
-  if (!myPlayer || myPlayer.role !== 'spymaster') return alert('فقط الـ Spymaster يمكنه إرسال تلميح');
+  if(!currentRoomId) return alert('انضم لغرفة أولاً');
+  const room = roomCache;
+  const mePlayer = room.players?.[me.uid];
+  if(!mePlayer || mePlayer.role !== 'spymaster') return alert('فقط Spymaster يمكنه إرسال تلميح');
 
   const word = clueWordInput.value.trim();
-  const number = parseInt(clueNumberInput.value || '0', 10);
-  if (!word) return alert('أدخل كلمة تلميح');
+  const number = parseInt(clueNumberInput.value || '0',10);
+  if(!word) return alert('أدخل كلمة التلميح');
 
   await update(ref(db, `rooms/${currentRoomId}/state`), { clue: { word, number }, guessesLeft: number + 1 });
-  clueWordInput.value = '';
-  clueNumberInput.value = '';
+  await push(ref(db, `rooms/${currentRoomId}/history`), `${mePlayer.name} أعطى تلميح: ${word} (${number})`);
+  clueWordInput.value = ''; clueNumberInput.value = '';
 };
 
-/* ========== محاولة التخمين ========== */
-async function attemptGuess(index) {
-  if (!currentRoomId) return;
-  const room = roomDataCache;
-  if (!room) return;
-  if (room.revealed?.[index]) return; // سبق كشفها
-  // يمكن إضافة تحقق إضافي: هل الدور يسمح بالتخمين؟
-  // سنعمد إلى عملية موثوقة: اكتمال التغيير في DB
+/* ========== Card click => guess attempt ========== */
+async function onCardClick(index){
+  if(!currentRoomId) return;
+  const room = roomCache;
+  if(!room) return;
+  if(room.revealed?.[index]) return; // already revealed
+
+  // read keycard and revealed
   const revealedRef = ref(db, `rooms/${currentRoomId}/revealed`);
-  const snap = await get(revealedRef);
-  const arr = snap.val() || Array(25).fill(false);
-  if (arr[index]) return;
+  const keyRef = ref(db, `rooms/${currentRoomId}/keycard`);
+  const [revealedSnap, keySnap] = await Promise.all([get(revealedRef), get(keyRef)]);
+  const revealedObj = revealedSnap.exists() ? revealedSnap.val() : {};
+  if(revealedObj[index]) return;
 
-  // كشف البطاقة
-  arr[index] = true;
-  // write back as object of indices (Realtime DB)
-  const obj = arr.reduce((acc, v, i) => { acc[i] = v; return acc; }, {});
-  await update(ref(db, `rooms/${currentRoomId}`), { revealed: obj });
+  // mark revealed
+  revealedObj[index] = true;
+  await set(ref(db, `rooms/${currentRoomId}/revealed`), revealedObj);
 
-  // سجل الحدث - (اختياري يمكنك إضافة سجل history)
+  const key = keySnap.exists() ? keySnap.val() : [];
+  const color = key[index];
+
+  // record history
+  const name = room.players?.[me.uid]?.name || 'لاعب';
+  await push(ref(db, `rooms/${currentRoomId}/history`), `${name} خمن بطاقة (${index}) => ${color}`);
+
+  // update game state: if assassin -> end game, if other team -> switch turn, if same team -> decrease guessesLeft
+  const stateRef = ref(db, `rooms/${currentRoomId}/state`);
+  const stateSnap = await get(stateRef);
+  const state = stateSnap.exists() ? stateSnap.val() : {};
+
+  if(color === 'assassin'){
+    // winner is opposite team of guesser
+    const guesserTeam = room.players?.[me.uid]?.team;
+    const winner = guesserTeam === 'red' ? 'blue' : 'red';
+    await update(ref(db, `rooms/${currentRoomId}/state`), { winner, phase: 'ended' });
+    await push(ref(db, `rooms/${currentRoomId}/history`), `انتهت اللعبة — ${winner} فاز (بسبب Assassin)`);
+    return;
+  }
+
+  const guesserTeam = room.players?.[me.uid]?.team;
+  if(color !== guesserTeam){
+    // wrong team -> switch turn
+    const next = (state.turn === 'red') ? 'blue' : 'red';
+    await update(ref(db, `rooms/${currentRoomId}/state`), { turn: next, guessesLeft: 0, clue: null });
+  } else {
+    // correct guess -> decrease guessesLeft
+    const newGuesses = Math.max((state.guessesLeft || 1) - 1, 0);
+    await update(ref(db, `rooms/${currentRoomId}/state`), { guessesLeft: newGuesses });
+  }
+
+  // check win: if all team words revealed
+  await checkWinCondition();
 }
 
-/* ========== مؤقت الدور (مزامن عبر الغرفة) ========== */
+/* ========== Check win condition ========== */
+async function checkWinCondition(){
+  const room = roomCache;
+  if(!room) return;
+  const key = room.keycard || [];
+  const revealed = room.revealed || {};
+  const counts = { red:0, blue:0 };
+  for(let i=0;i<25;i++){
+    if(key[i] === 'red' && !revealed[i]) counts.red++;
+    if(key[i] === 'blue' && !revealed[i]) counts.blue++;
+  }
+  if(counts.red === 0){
+    await update(ref(db, `rooms/${currentRoomId}/state`), { winner: 'red', phase: 'ended' });
+    await push(ref(db, `rooms/${currentRoomId}/history`), `انتهت اللعبة — الفريق الأحمر فاز`);
+  } else if(counts.blue === 0){
+    await update(ref(db, `rooms/${currentRoomId}/state`), { winner: 'blue', phase: 'ended' });
+    await push(ref(db, `rooms/${currentRoomId}/history`), `انتهت اللعبة — الفريق الأزرق فاز`);
+  }
+}
+
+/* ========== Timer (synchronized) ========== */
 startTimerBtn.onclick = async () => {
-  if (!currentRoomId) return alert('انضم إلى غرفة أولاً');
-  // المضيف أو أي لاعب يمكن بدء المؤقت — يمكن تقييده لاحقًا
-  const secs = parseInt(timerSecondsInput.value || '60', 10);
+  if(!currentRoomId) return alert('انضم لغرفة أولاً');
+  const secs = parseInt(timerSecondsInput.value || '60',10);
   await update(ref(db, `rooms/${currentRoomId}/state/timer`), { running: true, secondsLeft: secs });
   runLocalTimer();
 };
-
 pauseTimerBtn.onclick = async () => {
-  if (!currentRoomId) return;
+  if(!currentRoomId) return;
   await update(ref(db, `rooms/${currentRoomId}/state/timer`), { running: false });
   clearInterval(timerInterval);
 };
-
 resetTimerBtn.onclick = async () => {
-  if (!currentRoomId) return;
-  const secs = parseInt(timerSecondsInput.value || '60', 10);
+  if(!currentRoomId) return;
+  const secs = parseInt(timerSecondsInput.value || '60',10);
   await update(ref(db, `rooms/${currentRoomId}/state/timer`), { running: false, secondsLeft: secs });
   clearInterval(timerInterval);
 };
 
-/* ========== استماع لمستجدات المؤقت في DB وتزامن عرض الوقت محليًا ========== */
-onValue(ref(db), (snap) => {
-  const root = snap.val();
-  if (!root || !currentRoomId) return;
-  const room = root.rooms?.[currentRoomId];
-  if (!room) return;
-  // حفظ نسخة محلية
-  roomDataCache = room;
-  renderRoom(room);
-
-  const timer = room.state?.timer || { running: false, secondsLeft: 60 };
-  timerDisplay.textContent = formatTime(timer.secondsLeft);
-  if (timer.running) {
-    runLocalTimer();
-  } else {
-    clearInterval(timerInterval);
-  }
-});
-
-/* ========== عدّاد محلي للتزامن (يعمل عندما running=true) ========== */
-function runLocalTimer() {
-  if (!currentRoomId) return;
+function runLocalTimer(){
   clearInterval(timerInterval);
-  timerInterval = setInterval(async () => {
+  timerInterval = setInterval(async ()=>{
     const tRef = ref(db, `rooms/${currentRoomId}/state/timer/secondsLeft`);
-    const snap = await get(tRef);
-    let secs = snap.exists() ? snap.val() : 0;
+    const tSnap = await get(tRef);
+    let secs = tSnap.exists() ? tSnap.val() : 0;
     secs = Math.max(0, secs - 1);
     await set(tRef, secs);
-    if (secs <= 0) {
+    if(secs <= 0){
       clearInterval(timerInterval);
       await update(ref(db, `rooms/${currentRoomId}/state/timer`), { running: false });
     }
   }, 1000);
 }
 
-/* ========== توصيات أمنية حول التحقق ========== */
+/* ========== Observe entire DB root for room updates (efficient enough for demo) ========== */
+onValue(ref(db), (snap)=>{
+  const root = snap.val();
+  if(!root || !currentRoomId) return;
+  const room = root.rooms?.[currentRoomId];
+  if(!room) return;
+  roomCache = room;
+  renderRoom(room);
+  // update timer display
+  const t = room.state?.timer || { running:false, secondsLeft:60 };
+  timerDisplay.textContent = formatTime(t.secondsLeft);
+  if(t.running){ runLocalTimer(); } else { clearInterval(timerInterval); }
+});
+
+/* ========== Notes and security recommendations ========== */
 /*
-ملاحظة مهمة:
-- هذا التنفيذ يعتمد على client-side writes إلى Realtime DB. للحصول على أمان حقيقي:
-  1) ضع قواعد Database تمنع كتابة keycard أو تغييره من العميل.
-  2) ضع Cloud Functions تجعل server-authoritative للتحقق من بدء اللعبة وعمليات التخمين المهمة (مثلاً change revealed).
-  3) ضع قواعد بحيث أن only host can set board/keycard/state.phase from 'lobby' to 'playing'.
+مهم جداً — هذه نسخة وظيفية لكنها تعتمد على client-side permissions:
+- يجب إضافة قواعد Realtime DB صارمة تمنع أي لاعب من كتابة keycard أو تغيير board أو تحويل phase إلى 'playing'
+- أو الأفضل: استخدم Cloud Functions server-side endpoints لبدء اللعبة، استقبال التخمينات والتحقق من الدور (server authoritative)
+مثال قواعد سريعة (بدائية):
+{
+  "rules": {
+    "rooms": {
+      "$roomId": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        "keycard": { ".read": "root.child('rooms').child($roomId).child('players').child(auth.uid).child('role').val() == 'spymaster'", ".write": "false" },
+        "board": { ".write": "root.child('rooms').child($roomId).child('host').val() == auth.uid" },
+        "state": { ".write": "root.child('rooms').child($roomId).child('host').val() == auth.uid" }
+      }
+    }
+  }
+}
+لكن الأفضل هو Cloud Functions لعملية البدء وعمليات التخمين الرئيسية.
 */
