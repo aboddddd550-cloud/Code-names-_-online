@@ -1,113 +1,65 @@
-// كلمات اللعبة (يمكنك تعديلها)
+// استيراد Firebase Realtime Database
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+
+// إعداد Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyDQ9PFMO7k_eY78Fl6vxe18g_VbCMXTe3E",
+  authDomain: "code-online-e0a52.firebaseapp.com",
+  databaseURL: "https://code-online-e0a52-default-rtdb.firebaseio.com",
+  projectId: "code-online-e0a52",
+  storageBucket: "code-online-e0a52.firebasestorage.app",
+  messagingSenderId: "785121976090",
+  appId: "1:785121976090:web:4a45161ca1a887970416a3"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// كلمات اللعبة
 const words = [
-  "شمس","قمر","نجم","سماء","بحر",
-  "جبل","نهر","وردة","شجرة","كتاب",
-  "سيارة","طائرة","قط","كلب","فيل",
-  "مطر","ثلج","نار","هواء","زجاج",
-  "مفتاح","قفل","باب","نافذة","كرسي"
+  "شمس","قمر","مفتاح","باب","سيارة",
+  "وردة","نهر","جبل","سفينة","وقت",
+  "ملك","عين","قلم","مدينة","طريق",
+  "بيت","ثعلب","كرة","كتاب","ذهب",
+  "رمل","بحر","هاتف","سماء","سيف"
 ];
 
-// مراجع عناصر HTML
-const board = document.getElementById("board");
-const currentTeamSpan = document.getElementById("current-team");
-const roleSpan = document.getElementById("role");
-const redLeftSpan = document.getElementById("red-left");
-const blueLeftSpan = document.getElementById("blue-left");
-const newGameBtn = document.getElementById("newGameBtn");
-
-let boardCards = [];
-let colors = [];
-let redLeft = 9;
-let blueLeft = 8;
-let currentTeam = "blue"; // الفريق الأزرق يبدأ
-
-// دالة لخلط مصفوفة
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
+// ألوان البطاقات
+const roles = [];
+for(let i=0;i<25;i++){
+  if(i<8) roles.push("red");
+  else if(i<16) roles.push("blue");
+  else if(i===16) roles.push("black");
+  else roles.push("neutral");
 }
 
-// إنشاء لعبة جديدة
-function newGame() {
+// خلط الكلمات والأدوار
+words.sort(()=>Math.random()-0.5);
+roles.sort(()=>Math.random()-0.5);
+
+const board = document.getElementById("board");
+const gameRef = ref(db, "room1"); // الغرفة الافتراضية
+
+// إذا لا توجد بيانات، انشئها
+set(gameRef, {cards: words.map((w,i)=>({word:w,role:roles[i],revealed:false}))});
+
+// استماع للتغييرات في الوقت الفعلي
+onValue(gameRef, (snapshot)=>{
+  const data = snapshot.val();
+  if(!data) return;
   board.innerHTML = "";
-  boardCards = [];
-  colors = [];
-  redLeft = 9;
-  blueLeft = 8;
-  currentTeam = "blue";
-  currentTeamSpan.textContent = currentTeam === "blue" ? "أزرق" : "أحمر";
-  redLeftSpan.textContent = redLeft;
-  blueLeftSpan.textContent = blueLeft;
-
-  const shuffledWords = shuffle(words.slice());
-
-  // توزيع الألوان بشكل دقيق
-  colors = Array(9).fill("red")
-    .concat(Array(8).fill("blue"))
-    .concat(Array(7).fill("neutral"))
-    .concat(["assassin"]);
-  shuffle(colors);
-
-  for (let i = 0; i < 25; i++) {
+  data.cards.forEach((c,i)=>{
     const card = document.createElement("div");
     card.className = "card";
-    card.textContent = shuffledWords[i];
-    card.dataset.color = colors[i];
-    card.dataset.revealed = "false";
-
-    card.addEventListener("click", () => revealCard(card));
-
+    card.textContent = c.word;
+    if(c.revealed) card.classList.add(c.role);
+    card.onclick = ()=>{
+      if(!c.revealed){
+        c.revealed = true;
+        set(ref(db, "room1/cards/"+i), c);
+      }
+    };
     board.appendChild(card);
-    boardCards.push(card);
-  }
-}
-
-// كشف البطاقة
-function revealCard(card) {
-  if (card.dataset.revealed === "true") return;
-
-  const color = card.dataset.color;
-
-  if (roleSpan.textContent === "Spymaster") {
-    // Spymaster يرى كل الألوان دون تغيير الدور
-    if (color === "red") card.style.backgroundColor = "#ff4d4d";
-    else if (color === "blue") card.style.backgroundColor = "#4d79ff";
-    else if (color === "neutral") card.style.backgroundColor = "#d9d9d9";
-    else if (color === "assassin") card.style.backgroundColor = "#000";
-  } else {
-    // Guessers
-    if (color === "red") {
-      card.style.backgroundColor = "#ff4d4d";
-      redLeft--;
-    } else if (color === "blue") {
-      card.style.backgroundColor = "#4d79ff";
-      blueLeft--;
-    } else if (color === "neutral") {
-      card.style.backgroundColor = "#d9d9d9";
-    } else if (color === "assassin") {
-      card.style.backgroundColor = "#000";
-      alert("لقد اكتشفت بطاقة القاتل! انتهت اللعبة.");
-    }
-
-    // تحديث العداد
-    redLeftSpan.textContent = redLeft;
-    blueLeftSpan.textContent = blueLeft;
-
-    // تغيير الدور إذا اخترت بطاقة الفريق الخصم
-    if ((currentTeam === "blue" && color === "red") || (currentTeam === "red" && color === "blue") || color === "neutral") {
-      currentTeam = currentTeam === "blue" ? "red" : "blue";
-      currentTeamSpan.textContent = currentTeam === "blue" ? "أزرق" : "أحمر";
-    }
-  }
-
-  card.dataset.revealed = "true";
-}
-
-// زر لعبة جديدة
-newGameBtn.addEventListener("click", newGame);
-
-// بدء اللعبة مباشرة
-newGame();
+  });
+});
