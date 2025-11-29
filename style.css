@@ -1,32 +1,60 @@
-body {
-    background: #f0f0f0;
-    font-family: Tahoma, sans-serif;
-    text-align: center;
+:root{
+  --bg:#f4f7fb; --panel:#fff; --accent:#0b7bff;
+  --red:#e74c3c; --blue:#2471ff; --neutral:#cfcfcf; --assassin:#111;
+  --text:#122;
 }
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Tahoma,Arial;background:var(--bg);color:var(--text);direction:rtl}
+header{padding:18px;text-align:center}
+.muted{opacity:0.75;font-size:13px}
 
-#container {
-    width: 90%;
-    margin: auto;
-}
+.setup{display:flex;gap:8px;justify-content:center;padding:8px}
+.setup input{padding:8px;border-radius:6px;border:1px solid #dfefff}
+.setup button{padding:8px 12px;border-radius:6px;border:none;background:var(--accent);color:#fff;cursor:pointer}
 
-#gameBoard {
-    margin-top: 20px;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 10px;
-}
+.main{display:flex;gap:14px;padding:16px;align-items:flex-start}
+.leftpanel{width:340px;background:var(--panel);padding:12px;border-radius:10px;box-shadow:0 6px 18px rgba(16,24,40,0.06)}
+.boardwrap{flex:1;display:flex;flex-direction:column;gap:12px}
 
-.card {
-    background: white;
-    padding: 15px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    border: 2px solid #ccc;
-    transition: 0.2s;
-}
+.players{max-height:200px;overflow:auto;padding:6px;border-radius:6px;background:linear-gradient(180deg,#fff,#fbfdff)}
+.players .pitem{padding:6px;border-bottom:1px dashed rgba(0,0,0,0.04)}
 
-.card.red { background: #ffb3b3; border-color: #ff0000; }
-.card.blue { background: #b3ccff; border-color: #0040ff; }
-.card.neutral { background: #e8e8e8; }
-.card.black { background: #000; color: #fff; }
+.controls{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.customWords textarea{width:100%;height:110px;padding:8px;border-radius:6px;border:1px solid #e6eef8;background:white}
+.primary{background:var(--red);color:white;padding:8px;border-radius:6px;border:none;margin-top:8px;cursor:pointer}
+
+.board{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:12px;border-radius:10px}
+.card{background:var(--panel);padding:18px;border-radius:10px;min-height:92px;display:flex;align-items:center;justify-content:center;font-weight:800;cursor:pointer;border:2px solid rgba(0,0,0,0.04);transition:transform .14s,box-shadow .14s}
+.card:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(16,24,40,0.06)}
+.card.revealed{opacity:0.98;color:#fff}
+.card.red{background:linear-gradient(180deg,#ffb6b0,var(--red));}
+.card.blue{background:linear-gradient(180deg,#b6d0ff,var(--blue));}
+.card.neutral{background:linear-gradient(180deg,#f3f3f3,var(--neutral));color:#333}
+.card.assassin{background:linear-gradient(180deg,#000,#222);}
+
+.teamsRow{display:flex;gap:12px;justify-content:center;margin-top:6px}
+.teamPanel{width:48%;background:var(--panel);padding:10px;border-radius:8px;box-shadow:0 6px 18px rgba(16,24,40,0.04)}
+.teamPanel h4{margin:4px 0}
+.teamMembers{margin-top:8px;font-size:14px;color:#333}
+.redPanel{border-top:4px solid var(--red)}
+.bluePanel{border-top:4px solid var(--blue)}
+
+.actionLog{background:var(--panel);padding:10px;border-radius:8px;min-height:120px;max-height:200px;overflow:auto}
+.history div{padding:6px;border-bottom:1px dashed #eee;font-size:13px}
+
+.spymasterPanel{background:var(--panel);padding:12px;border-radius:8px}
+.spymasterRow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.spymasterRow input{padding:8px;border-radius:6px;border:1px solid #e6eef8}
+.spymasterRow button{padding:8px 10px;border-radius:6px;border:none;background:var(--accent);color:#fff;cursor:pointer}
+
+.keycardGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px}
+.spy-card{padding:8px;border-radius:6px;text-align:center;font-weight:700;color:#fff}
+.spy-card.red{background:var(--red)}
+.spy-card.blue{background:var(--blue)}
+.spy-card.neutral{background:var(--neutral);color:#222}
+.spy-card.assassin{background:var(--assassin)}
+
+.timer-controls{display:flex;gap:8px;align-items:center}
+#timerDisplay{font-weight:800;font-size:18px;margin-top:6px}
+.footer{padding:10px;text-align:center;margin-top:14px;color:#445}
+@media(max-width:980px){.main{flex-direction:column}.leftpanel{width:100%}}
