@@ -1,53 +1,62 @@
 body {
     font-family: sans-serif;
-    background: #f4f4f4;
+    background: #f2f2f2;
     text-align: center;
     direction: rtl;
 }
 
 .title {
-    margin-top: 20px;
     font-size: 32px;
+    margin: 20px 0;
+}
+
+.room-container {
+    margin: 20px auto;
+}
+
+#roomInput {
+    padding: 10px;
+    font-size: 18px;
 }
 
 .board {
     margin: 30px auto;
     display: grid;
-    grid-template-columns: repeat(5, 150px);
+    grid-template-columns: repeat(5, 140px);
     gap: 10px;
-    width: max-content;
 }
 
 .card {
-    background: #ffffff;
+    background: #fff;
+    border: 2px solid #999;
     border-radius: 8px;
     padding: 20px;
-    font-size: 20px;
+    font-size: 18px;
     cursor: pointer;
     transition: 0.2s;
-    border: 2px solid #ccc;
 }
 
 .card:hover {
     transform: scale(1.05);
 }
 
-.red {
-    background: #d9534f !important;
-    color: white;
+.revealed.red { background: #d9534f; color: white; }
+.revealed.blue { background: #0275d8; color: white; }
+.revealed.neutral { background: #cfcfcf; color: black; }
+.revealed.assassin { background: black; color: white; }
+
+.spymaster {
+    margin: 20px auto;
+    max-width: 750px;
+    display: grid;
+    grid-template-columns: repeat(5, 120px);
+    gap: 5px;
 }
 
-.blue {
-    background: #0275d8 !important;
+.spy-card {
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 14px;
     color: white;
-}
-
-.neutral {
-    background: #cfcfcf !important;
-    color: black;
-}
-
-.assassin {
-    background: black !important;
-    color: white;
+    text-align: center;
 }
