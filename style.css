@@ -1,44 +1,32 @@
-:root{
-  --bg:#f7fbff; --panel:#ffffff; --accent:#0b84ff;
-  --red:#e53935; --blue:#1e88e5; --neutral:#cfcfcf; --assassin:#111;
-  --text:#122;
+body {
+    background: #f0f0f0;
+    font-family: Tahoma, sans-serif;
+    text-align: center;
 }
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;font-family:system-ui,Arial;background:var(--bg);color:var(--text);direction:rtl}
-header{padding:18px;text-align:center}
-.muted{opacity:0.75;font-size:13px}
-.top{display:flex;gap:8px;align-items:center;justify-content:center;padding:8px}
-.top input{padding:8px;border-radius:6px;border:1px solid #dfefff}
-.top button{padding:8px 12px;border-radius:6px;background:var(--accent);color:#fff;border:none;cursor:pointer}
 
-.main{display:flex;gap:14px;padding:16px}
-.leftpanel{width:320px;background:var(--panel);padding:12px;border-radius:8px;box-shadow:0 6px 18px rgba(16,24,40,0.06)}
-.boardwrap{flex:1;display:flex;flex-direction:column;gap:12px}
+#container {
+    width: 90%;
+    margin: auto;
+}
 
-.players{margin-top:8px;padding:6px;border-radius:6px;background:linear-gradient(180deg,#fff,#fbfdff);max-height:220px;overflow:auto}
-.players .pitem{padding:6px;border-bottom:1px dashed rgba(0,0,0,0.06)}
+#gameBoard {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+}
 
-.customWords textarea{width:100%;height:120px;padding:8px;border-radius:6px;border:1px solid #e6eef8;background:white}
+.card {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    border: 2px solid #ccc;
+    transition: 0.2s;
+}
 
-.board{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:8px;background:transparent}
-.card{background:#fff;padding:18px;border-radius:10px;min-height:88px;display:flex;align-items:center;justify-content:center;font-weight:800;cursor:pointer;border:2px solid rgba(0,0,0,0.04);transition:transform .14s,box-shadow .14s}
-.card:hover{transform:translateY(-6px);box-shadow:0 14px 40px rgba(16,24,40,0.06)}
-.card.revealed{opacity:0.98}
-.card.red{background:linear-gradient(180deg,#ffcccc,var(--red));color:#fff}
-.card.blue{background:linear-gradient(180deg,#cfe9ff,var(--blue));color:#fff}
-.card.neutral{background:linear-gradient(180deg,#f3f3f3,var(--neutral));color:#333}
-.card.assassin{background:linear-gradient(180deg,#000,#222);color:#fff}
-
-.cluePanel{display:flex;justify-content:space-between;align-items:center;padding:10px;background:linear-gradient(180deg,#fff,#fafcff);border-radius:8px}
-.clueInputs input{padding:8px;border-radius:6px;border:1px solid #e6eef8;background:white}
-.clueInputs button{padding:8px 12px;border-radius:6px;border:none;background:var(--accent);color:white;cursor:pointer}
-
-.spymasterPanel{background:var(--panel);padding:10px;border-radius:8px}
-.keycardGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-.spy-card{padding:8px;border-radius:6px;text-align:center;font-weight:700;color:#fff}
-
-.timer-controls{display:flex;gap:8px;align-items:center;margin-top:8px}
-#timerDisplay{font-weight:900;font-size:20px;margin-top:6px}
-.history{max-height:150px;overflow:auto;background:#fbfdff;padding:8px;border-radius:6px}
-.footer{padding:10px;text-align:center;margin-top:14px;color:#445}
-@media(max-width:980px){.main{flex-direction:column}.leftpanel{width:100%}}
+.card.red { background: #ffb3b3; border-color: #ff0000; }
+.card.blue { background: #b3ccff; border-color: #0040ff; }
+.card.neutral { background: #e8e8e8; }
+.card.black { background: #000; color: #fff; }
