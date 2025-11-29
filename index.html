@@ -1,25 +1,91 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Codenames Online</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Codenames Online - متعدد اللاعبين</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <header>
+    <h1>كود نيمز — متعدد اللاعبين</h1>
+  </header>
 
-    <h1 class="title">لعبة كود نيمز (إصدار متعدد اللاعبين)</h1>
+  <section class="topbar">
+    <input id="playerName" placeholder="اسمك (اختياري)" />
+    <input id="roomIdInput" placeholder="رمز الغرفة (أو اتركها لإنشاء)" />
+    <button id="createRoomBtn">إنشاء غرفة جديدة</button>
+    <button id="joinRoomBtn">انضم إلى الغرفة</button>
+    <span id="myId" class="muted"></span>
+  </section>
 
-    <div class="room-container">
-        <input id="roomInput" placeholder="اكتب اسم الغرفة">
-        <button onclick="joinRoom()">دخول الغرفة</button>
-    </div>
+  <main>
+    <aside class="leftpanel">
+      <h3>الغرفة: <span id="roomLabel">—</span></h3>
+      <div id="playersList" class="players"></div>
 
-    <h2 id="roomName"></h2>
+      <div class="controls">
+        <label>فريق:
+          <select id="teamSelect">
+            <option value="red">أحمر</option>
+            <option value="blue">أزرق</option>
+          </select>
+        </label>
+        <label>دور:
+          <select id="roleSelect">
+            <option value="guesser">Guesser</option>
+            <option value="spymaster">Spymaster</option>
+          </select>
+        </label>
+        <button id="setRoleBtn">تعيين الدور</button>
+      </div>
 
-    <div id="spymasterView" class="spymaster"></div>
-    <div id="board" class="board"></div>
+      <div class="customWords">
+        <h4>كلمات خاصة (25 كلمة — كل سطر كلمة)</h4>
+        <textarea id="customWords" placeholder="كلمة1&#10;كلمة2&#10;..."></textarea>
+        <label>فريق يبدأ:
+          <select id="startingTeam">
+            <option value="red">أحمر (9 كلمات)</option>
+            <option value="blue">أزرق (9 كلمات)</option>
+          </select>
+        </label>
+        <button id="startGameBtn" class="primary">بدء اللعبة (المضيف فقط)</button>
+      </div>
 
-    <script type="module" src="script.js"></script>
+      <div class="timerBox">
+        <h4>مؤقت الدور</h4>
+        <div id="timerDisplay">00:00</div>
+        <button id="startTimerBtn">ابدأ</button>
+        <button id="pauseTimerBtn">إيقاف</button>
+        <button id="resetTimerBtn">إعادة</button>
+        <input id="timerSeconds" type="number" min="10" value="60" /> ثواني
+      </div>
+    </aside>
+
+    <section class="boardwrap">
+      <div id="board" class="board" aria-label="لوحة اللعبة"></div>
+
+      <div id="cluePanel" class="cluePanel">
+        <div>
+          <input id="clueWord" placeholder="كلمة التلميح" />
+          <input id="clueNumber" type="number" min="0" placeholder="رقم" />
+          <button id="giveClueBtn">أرسل تلميح</button>
+        </div>
+        <div id="currentClue" class="muted">لا توجد تلميحات بعد</div>
+      </div>
+
+      <section id="spymasterPanel" class="spymasterPanel" hidden>
+        <h4>Keycard (خاص بالـ Spymaster)</h4>
+        <div id="keycardGrid" class="keycardGrid"></div>
+        <button id="toggleKeycardBtn">إخفاء/إظهار</button>
+      </section>
+    </section>
+  </main>
+
+  <footer class="footer muted">
+    ملاحظة: هذا النظام يعتمد على Firebase Realtime DB. للحصول على أمان حقيقي يجب إضافة فحوصات في Cloud Functions / قواعد الأمان.
+  </footer>
+
+  <script type="module" src="app.js"></script>
 </body>
 </html>
